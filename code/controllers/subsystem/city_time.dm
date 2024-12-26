@@ -51,7 +51,7 @@ SUBSYSTEM_DEF(city_time)
 					if(H.key)
 						var/datum/preferences/P = GLOB.preferences_datums[ckey(H.key)]
 						if(P)
-							P.add_experience(2)
+							P.add_experience(1)
 							if(H.mind)
 								if("[H.mind.assigned_role]" == "Prince" || "[H.mind.assigned_role]" == "Sheriff" || "[H.mind.assigned_role]" == "Seneschal" || "[H.mind.assigned_role]" == "Chantry Regent" || "[H.mind.assigned_role]" == "Baron" || "[H.mind.assigned_role]" == "Dealer")
 									P.add_experience(2)
@@ -62,12 +62,12 @@ SUBSYSTEM_DEF(city_time)
 //								if(H.total_contracted > 1)
 //									P.add_experience(1)
 //									H.total_contracted = 0
-								var/toreador_bonus = 0
+/*								var/toreador_bonus = 0
 								if(iskindred(H) && H.clane)
 									if(H.clane.name == "Toreador")
-										toreador_bonus = 1
+										toreador_bonus = 1*/
 								if(H.total_erp > 1500)
-									P.add_experience(2+toreador_bonus)
+									P.add_experience(2)
 									H.total_erp = 0
 								if(H.total_cleaned > 25)
 									P.add_experience(1)
@@ -100,7 +100,7 @@ SUBSYSTEM_DEF(city_time)
 					if(H.key)
 						var/datum/preferences/P = GLOB.preferences_datums[ckey(H.key)]
 						if(P)
-							P.add_experience(2)
+							P.add_experience(1)
 							if(H.mind)
 								if("[H.mind.assigned_role]" == "Prince" || "[H.mind.assigned_role]" == "Sheriff" || "[H.mind.assigned_role]" == "Seneschal" || "[H.mind.assigned_role]" == "Chantry Regent" || "[H.mind.assigned_role]" == "Baron" || "[H.mind.assigned_role]" == "Dealer")
 									P.add_experience(2)
@@ -111,12 +111,12 @@ SUBSYSTEM_DEF(city_time)
 //								if(H.total_contracted > 1)
 //									P.add_experience(3)
 //									H.total_contracted = 0
-								var/toreador_bonus = 0
+/*								var/toreador_bonus = 0
 								if(iskindred(H) && H.clane)
 									if(H.clane.name == "Toreador")
-										toreador_bonus = 1
+										toreador_bonus = 1*/
 								if(H.total_erp > 9000)
-									P.add_experience(2+toreador_bonus)
+									P.add_experience(2)
 									H.total_erp = 0
 								if(H.total_cleaned > 25)
 									P.add_experience(1)
