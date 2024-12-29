@@ -196,8 +196,8 @@
 	worn_icon_state = "id2"
 
 /obj/item/card/id/archive
-	name = "theatre staff lanyard"
-	id_type_name = "librarian badge"
+	name = "scholar badge"
+	id_type_name = "scholar badge"
 	desc = "A badge which shows a love of culture."
 	icon = 'code/modules/wod13/items.dmi'
 	icon_state = "id7"
@@ -209,8 +209,8 @@
 	worn_icon_state = "id7"
 
 /obj/item/card/id/regent
-	name = "theatre manager badge"
-	id_type_name = "senior librarian badge"
+	name = "erudite scholar badge"
+	id_type_name = "erudite scholar badge"
 	desc = "A badge which shows a deep understanding of culture."
 	icon = 'code/modules/wod13/items.dmi'
 	icon_state = "id7_regent"
@@ -219,7 +219,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/idcards_righthand.dmi'
 	onflooricon = 'code/modules/wod13/onfloor.dmi'
 	worn_icon = 'code/modules/wod13/worn.dmi'
-	worn_icon_state = "id7"
+	worn_icon_state = "id7_regent"
 
 /obj/item/card/id/cleaning
 	name = "janitor badge"
