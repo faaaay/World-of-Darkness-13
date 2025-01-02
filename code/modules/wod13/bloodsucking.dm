@@ -177,7 +177,7 @@
 							log_attack("[key_name(src)] successfully Diablerized [key_name(mob)].")
 							if(P)
 								P.diablerist = 1
-								if(mob.generation + 3 > generation)
+								if(mob.generation + 3 < generation)
 									P.generation = max(P.generation - 2, 7)
 								else
 									P.generation = max(P.generation - 1, 7)
