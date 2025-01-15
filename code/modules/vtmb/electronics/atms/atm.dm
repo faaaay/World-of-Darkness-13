@@ -93,6 +93,7 @@ var/mob/living/carbon/human/H
 		user.put_in_hands(allowance)
 		allowance.amount = rand(100, 1000)
 		update_icon_state(allowance)
+		qdel(src)
 	if(!account || code == "")
 		account = new /datum/vtm_bank_account()
 	if(user)
