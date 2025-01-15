@@ -88,6 +88,11 @@ var/mob/living/carbon/human/H
 
 /obj/item/vamp/creditcard/New(mob/user)
 	..()
+	if(isgarou(user))
+		var/obj/item/stack/dollar/allowance = new /obj/item/stack/dollar
+		user.put_in_hands(allowance)
+		allowance.amount = rand(100, 1000)
+		update_icon_state(allowance)
 	if(!account || code == "")
 		account = new /datum/vtm_bank_account()
 	if(user)
