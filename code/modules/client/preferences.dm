@@ -2292,10 +2292,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					enlightenment = !enlightenment
 
 				if("dharmarise")
-					if ((true_experience < 20) || (dharma_level >= 6) || !(pref_species.id == "kuei-jin"))
+					if ((true_experience < min((dharma_level * 5), 20)) || (dharma_level >= 6) || !(pref_species.id == "kuei-jin"))
 						return
 
-					true_experience -= 20
+					true_experience -= min((dharma_level * 5), 20)
 					dharma_level = clamp(dharma_level + 1, 1, 6)
 
 					if (dharma_level >= 6)
