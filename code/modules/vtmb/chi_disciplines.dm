@@ -986,6 +986,9 @@
 /datum/movespeed_modifier/tentacles1
 	multiplicative_slowdown = -0.5
 
+/datum/movespeed_modifier/kiai
+	multiplicative_slowdown = -0.3
+
 /datum/movespeed_modifier/demonform1
 	multiplicative_slowdown = -0.5
 /datum/movespeed_modifier/demonform2
@@ -1274,7 +1277,7 @@
 			caster.physique += 2
 			caster.dexterity += 2
 			caster.athletics += 2
-			caster.add_movespeed_modifier(/datum/movespeed_modifier/celerity)
+			caster.add_movespeed_modifier(/datum/movespeed_modifier/kiai)
 			ADD_TRAIT(caster, TRAIT_IGNORESLOWDOWN, SPECIES_TRAIT)
 			caster.do_jitter_animation(1 SECONDS)
 			spawn(delay+caster.discipline_time_plus)
@@ -1282,7 +1285,7 @@
 					caster.physique -= 2
 					caster.dexterity -= 2
 					caster.athletics -= 2
-					caster.remove_movespeed_modifier(/datum/movespeed_modifier/celerity)
+					caster.remove_movespeed_modifier(/datum/movespeed_modifier/kiai)
 					REMOVE_TRAIT(caster, TRAIT_IGNORESLOWDOWN, SPECIES_TRAIT)
 		if(2)
 			target.emote("stare")
