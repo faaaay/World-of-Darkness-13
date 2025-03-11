@@ -1264,29 +1264,38 @@
 			sound_gender = 'code/modules/wod13/sounds/kiai_male.ogg'
 		if(FEMALE)
 			sound_gender = 'code/modules/wod13/sounds/kiai_female.ogg'
-	caster.emote("scream")
 	playsound(caster.loc, sound_gender, 100, FALSE)
+	caster.visible_message("<span class='danger'>[caster] SCREAMS!</span>")
 	var/mypower = caster.get_total_social()
-	var/theirpower = caster.get_total_mentality()
-	if(theirpower >= mypower)
-		to_chat(caster, "<span class='warning'>[target]'s mind is too powerful to affect!</span>")
-		return
+	var/theirpower = target.get_total_mentality()
+	var/total_power = 1 //The proportion of your Social to their Mentality. Higher social means higher total_power and higher effect. If this is 1 or more, our social is at least as high as their mentality
 	switch(level_casting)
 		if(1)
-			target.emote(pick("shiver", "pale"))
-			target.Stun(2 SECONDS)
+			caster.physique += 2
+			caster.dexterity += 2
+			caster.athletics += 2
+			caster.add_movespeed_modifier(/datum/movespeed_modifier/celerity)
+			ADD_TRAIT(caster, TRAIT_IGNORESLOWDOWN, SPECIES_TRAIT)
+			caster.do_jitter_animation(1 SECONDS)
+			spawn(delay+caster.discipline_time_plus)
+				if(caster)
+					caster.physique -= 2
+					caster.dexterity -= 2
+					caster.athletics -= 2
+					caster.remove_movespeed_modifier(/datum/movespeed_modifier/celerity)
+					REMOVE_TRAIT(caster, TRAIT_IGNORESLOWDOWN, SPECIES_TRAIT)
 		if(2)
 			target.emote("stare")
 			if(ishuman(target))
 				var/mob/living/carbon/human/human_target = target
-				var/datum/cb = CALLBACK(human_target, TYPE_PROC_REF(/mob/living/carbon/human, combat_to_caster))
+				var/datum/cb = CALLBACK(human_target, /mob/living/carbon/human/proc/combat_to_caster)
 				for(var/i in 1 to 20)
 					addtimer(cb, (i - 1) * 1.5 SECONDS)
 		if(3)
 			target.emote("scream")
 			if(ishuman(target))
 				var/mob/living/carbon/human/human_target = target
-				var/datum/cb = CALLBACK(human_target, TYPE_PROC_REF(/mob/living/carbon/human, step_away_caster))
+				var/datum/cb = CALLBACK(human_target, /mob/living/carbon/human/proc/step_away_caster)
 				for(var/i in 1 to 20)
 					addtimer(cb, (i - 1) * 1.5 SECONDS)
 		if(4)
@@ -1294,13 +1303,16 @@
 				target.resist_fire()
 			new /datum/hallucination/fire(target, TRUE)
 		if(5)
-			if(prob(25))
-				target.resist_fire()
-			new /datum/hallucination/fire(target, TRUE)
-			for(var/mob/living/hallucinating_mob in (oviewers(5, target) - caster))
-				if(prob(20))
-					hallucinating_mob.resist_fire()
-				new /datum/hallucination/fire(hallucinating_mob, TRUE)
+			for(var/mob/living/carbon/hearer in ohearers(5, caster))
+				theirpower = hearer.get_total_mentality()
+				total_power = (mypower - 2) / theirpower //same as dot 3, but your power is treated as 2 points lower for determining the effects)
+				step_away(hearer, caster)
+				if(total_power > 1)
+					hearer.apply_effect(total_power * 0.2 SECONDS, EFFECT_KNOCKDOWN)
+					hearer.visible_message("<span class='danger'>[target] is knocked to the floor!</span>", "<span class='userdanger'>[caster]'s scream knocks you off your feet!</span>")
+				if(mypower >= theirpower)
+					hearer.do_jitter_animation(1 SECONDS)
+					new /datum/hallucination/fire(target, TRUE)
 
 /datum/chi_discipline/beast_shintai
 	name = "Beast Shintai"
