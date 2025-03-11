@@ -152,7 +152,7 @@
 	if(target.stat == DEAD && dead_restricted)
 		return FALSE
 
-	if(target.resistant_to_disciplines)
+	if(target.resistant_to_disciplines || target.spell_immunity)
 		to_chat(caster, "<span class='danger'>[target] resists your powers!</span>")
 		return FALSE
 
@@ -417,9 +417,11 @@
 		if(3)
 			ADD_TRAIT(caster, TRAIT_PASS_THROUGH_WALLS, "jade shintai 3")
 			caster.alpha = 128
+			caster.obfuscate_level = 3
 			caster.add_movespeed_modifier(/datum/movespeed_modifier/wall_passing)
 			spawn(delay+caster.discipline_time_plus)
 				if(caster)
+					caster.obfuscate_level = 0
 					caster.alpha = 255
 					REMOVE_TRAIT(caster, TRAIT_PASS_THROUGH_WALLS, "jade shintai 3")
 					caster.remove_movespeed_modifier(/datum/movespeed_modifier/wall_passing)
@@ -1196,7 +1198,7 @@
 			target.clear_fullscreen("yomi", 5)
 			if(ishuman(target))
 				var/mob/living/carbon/human/human_target = target
-				var/datum/cb = CALLBACK(human_target, TYPE_PROC_REF(/mob/living/carbon/human, attack_myself_command))
+				var/datum/cb = CALLBACK(human_target, /mob/living/carbon/human/proc/attack_myself_command)
 				for(var/i in 1 to 20)
 					addtimer(cb, (i - 1) * 1.5 SECONDS)
 				target.emote("scream")
@@ -1264,43 +1266,64 @@
 			sound_gender = 'code/modules/wod13/sounds/kiai_male.ogg'
 		if(FEMALE)
 			sound_gender = 'code/modules/wod13/sounds/kiai_female.ogg'
-	caster.emote("scream")
 	playsound(caster.loc, sound_gender, 100, FALSE)
+	caster.visible_message("<span class='danger'>[caster] SCREAMS!</span>")
 	var/mypower = caster.get_total_social()
-	var/theirpower = caster.get_total_mentality()
-	if(theirpower >= mypower)
-		to_chat(caster, "<span class='warning'>[target]'s mind is too powerful to affect!</span>")
-		return
+	var/theirpower = target.get_total_mentality()
+	var/total_power = 1 //The proportion of your Social to their Mentality. Higher social means higher total_power and higher effect. If this is 1 or more, our social is at least as high as their mentality
 	switch(level_casting)
 		if(1)
-			target.emote(pick("shiver", "pale"))
-			target.Stun(2 SECONDS)
+			caster.physique += 2
+			caster.dexterity += 2
+			caster.athletics += 2
+			caster.add_movespeed_modifier(/datum/movespeed_modifier/celerity)
+			ADD_TRAIT(caster, TRAIT_IGNORESLOWDOWN, SPECIES_TRAIT)
+			caster.do_jitter_animation(1 SECONDS)
+			spawn(delay+caster.discipline_time_plus)
+				if(caster)
+					caster.physique -= 2
+					caster.dexterity -= 2
+					caster.athletics -= 2
+					caster.remove_movespeed_modifier(/datum/movespeed_modifier/celerity)
+					REMOVE_TRAIT(caster, TRAIT_IGNORESLOWDOWN, SPECIES_TRAIT)
 		if(2)
-			target.emote("stare")
-			if(ishuman(target))
-				var/mob/living/carbon/human/human_target = target
-				var/datum/cb = CALLBACK(human_target, TYPE_PROC_REF(/mob/living/carbon/human, combat_to_caster))
-				for(var/i in 1 to 20)
-					addtimer(cb, (i - 1) * 1.5 SECONDS)
+			for(var/mob/living/carbon/hearer in ohearers(2, caster))
+				total_power = mypower / hearer.get_total_mentality()
+				step_away(hearer, caster)
+				hearer.apply_effect(total_power * 2, EFFECT_EYE_BLUR)
+				if(total_power >= 1)
+					hearer.apply_effect(total_power * 0.2 SECONDS, EFFECT_STUN)
 		if(3)
-			target.emote("scream")
-			if(ishuman(target))
-				var/mob/living/carbon/human/human_target = target
-				var/datum/cb = CALLBACK(human_target, TYPE_PROC_REF(/mob/living/carbon/human, step_away_caster))
-				for(var/i in 1 to 20)
-					addtimer(cb, (i - 1) * 1.5 SECONDS)
+			total_power = mypower / theirpower
+			step_away(target, caster)
+			if(total_power > 1)
+				target.apply_effect(total_power * 0.2 SECONDS, EFFECT_KNOCKDOWN)
+			if(mypower >= (theirpower - 2))
+				target.do_jitter_animation(1 SECONDS)
+				new /datum/hallucination/fire(target, TRUE)
 		if(4)
-			if(prob(25))
-				target.resist_fire()
-			new /datum/hallucination/fire(target, TRUE)
+			var/target_phys = target.get_total_physique()
+			target.add_splatter_floor(get_turf(target))
+			target.add_splatter_floor(get_turf(get_step(target, caster.dir)))
+			switch(vampireroll(mypower, target_phys))
+				if(DICE_WIN, DICE_CRIT_WIN)
+					target.apply_damage(5*mypower, BRUTE)
+					target.apply_damage(2*mypower, CLONE)
+					target.visible_message("<span class='danger'>[target]'s flesh tears!</span>", "<span class='userdanger'>[caster]'s scream rips the flesh from your bones!</span>")
+				if(DICE_FAILURE, DICE_CRIT_FAILURE)
+					target.apply_damage(3*mypower, BRUTE)
+					target.visible_message("<span class='danger'>Bleeding wounds open up on [target]!</span>", "<span class='userdanger'>[caster]'s scream tears at your flesh!</span>")
 		if(5)
-			if(prob(25))
-				target.resist_fire()
-			new /datum/hallucination/fire(target, TRUE)
-			for(var/mob/living/hallucinating_mob in (oviewers(5, target) - caster))
-				if(prob(20))
-					hallucinating_mob.resist_fire()
-				new /datum/hallucination/fire(hallucinating_mob, TRUE)
+			for(var/mob/living/carbon/hearer in ohearers(5, caster))
+				theirpower = hearer.get_total_mentality()
+				total_power = (mypower - 2) / theirpower //same as dot 3, but your power is treated as 2 points lower for determining the effects)
+				step_away(hearer, caster)
+				if(total_power > 1)
+					hearer.apply_effect(total_power * 0.2 SECONDS, EFFECT_KNOCKDOWN)
+					hearer.visible_message("<span class='danger'>[target] is knocked to the floor!</span>", "<span class='userdanger'>[caster]'s scream knocks you off your feet!</span>")
+				if(mypower >= theirpower)
+					hearer.do_jitter_animation(1 SECONDS)
+					new /datum/hallucination/fire(target, TRUE)
 
 /datum/chi_discipline/beast_shintai
 	name = "Beast Shintai"
@@ -2157,8 +2180,10 @@
 	switch(level_casting)
 		if(1)
 			animate(caster, alpha = 10, time = 1 SECONDS)
+			caster.obfuscate_level = 3
 			spawn(delay+caster.discipline_time_plus)
 				if(caster)
+					caster.obfuscate_level = 0
 					if(caster.alpha != 255)
 						caster.playsound_local(caster.loc, 'code/modules/wod13/sounds/obfuscate_deactivate.ogg', 50, FALSE)
 						caster.alpha = 255
